@@ -1,0 +1,36 @@
+name : AWS S3 upload
+# 이름은 아무거나
+
+on:
+  push:
+    branches:
+      - main
+
+# 실제 일을 처리하는 부분은 jobs
+jobs:
+  deploy:
+    runs-on: ubuntu-latest 
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v3
+        # name 을 제외하고 여기까지는 거의 동일함
+      - name: AWS IAM 사용자 설정
+        uses: aws-actions/configure-aws-credentials@v2 # 사용자 설정을 사용
+        with: # 환경 변수 설정
+          aws-access-key-id: access key id 입력
+          aws-secret-access-key: secret access key 입력
+          aws-region: region 입력
+      
+      - name: 리액트 빌드
+        run: | # 리눅스의 파이프 표시가 |
+          npm install 
+          npm run build
+        # 필요한 요소를 다운 받고 build 를 수행
+
+      - name: S3 에 업로드
+        # 빌드한 내용(build/)을 s3 에 업로드
+        run: aws s3 sync build/ s3://버킷이름 -- acl public-read
+        env: 
+          AWS_ACCESS_KEY_ID: access key id 입력
+          AWS_SECRET_ACCESS_KEY: secret access key 입력
+          
